@@ -14,5 +14,3 @@ for i in data.index:
         d = data.loc[i]
         for x in d.index:
             new.append()
-
-    
