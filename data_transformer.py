@@ -10,21 +10,17 @@ end = 2017
 d = data.loc[2004]
 months = [6, 7, 8, 9, 10, 11, 12, 1, 2, 3, 4, 5]
 
-new = [[[str(i)+"-"+str(k), j] for j, k in zip(data.loc[i], months) if k > 6: j -= 1] for i in data.index if i >= start and i <= end]
+# new = np.array([[[str(i)+"-"+str(k), j] for j, k in zip(data.loc[i], months)] for i in data.index if i >= start and i <= end]).reshape(168,2)
 
-df = pd.DataFrame(new)
-df = df.stack()
-# print(df.stack())
-print(df.shape)
-# df.reset_index(drop=True, inplace=True)
-df.to_csv("reformatted.csv", index=False)
+a = pd.DataFrame(columns=["year-month", "revenue"])
 
-# for i in data.index:
-#     if(i >= start and i <= end):
-#         d = data.loc[i]
-#         new.append(zip([i for i in d.name], [d[i] for i in d.index]))
-#         # for x in d.index:
-#         #     print(d[x], d.name)
-#         #     new.append((d.name+"-"+1, d[x]))
+for i in data.index:
+    if i >= start and i <= end:
+        for j, k in zip(data.loc[i], months):
+            year = i
+            if k >= 6:
+                year = i - 1
+            a.loc[len(a)] = [str(year)+'-'+str(k), j]
 
-# print(new)
+a.set_index('year-month', inplace=True)
+a.to_csv("reformatted.csv")
