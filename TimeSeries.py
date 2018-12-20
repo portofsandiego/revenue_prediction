@@ -1,43 +1,11 @@
 
 import pandas as pd                              # tables and data manipulations
 
-import statsmodels.formula.api as smf            # statistics and econometrics
-import statsmodels.tsa.api as smt
-import statsmodels.api as sm
-import scipy.stats as scs
-
-from itertools import product                    # some useful functions
-from tqdm import tqdm_notebook
-
-import warnings                                  # `do not disturb` mode
-warnings.filterwarnings('ignore')
-
-get_ipython().run_line_magic('matplotlib', 'inline')
-
 
 # ## Import Data
 
-# In[2]:
-
 
 rev = pd.read_csv('bwip_reformatted_FY2003-2017.csv', index_col=['Date'], parse_dates=['Date'])
-
-
-# ## Plot Data
-
-# In[3]:
-
-
-plt.figure(figsize=(15, 7))
-plt.plot(rev.Revenue)
-plt.title('Revenue (yearly data)')
-plt.grid(True)
-plt.show()
-
-
-# ## Import Sklearn and MAPE Function
-
-# In[4]:
 
 
 # Importing everything from above
@@ -51,9 +19,6 @@ def mean_absolute_percentage_error(y_true, y_pred):
 
 # ## Define Moving Average Function
 
-# In[5]:
-
-
 def moving_average(series, n):
     """
         Calculate average of last n observations
@@ -62,9 +27,6 @@ def moving_average(series, n):
 
 
 # ## Define Holt Winters Model
-
-# In[6]:
-
 
 class HoltWinters:
     
@@ -212,15 +174,11 @@ def timeseriesCVscore(params, series, loss_function=mean_squared_error, slen=12)
 
 # ## Train Holt Winters Model on Loss Function MSLE
 
-# In[8]:
-
 
 get_ipython().run_cell_magic('time', '', 'data = rev.Revenue[:-20] # leave some data for testing\n\n# initializing model parameters alpha, beta and gamma\nx = [0, 0, 0] \n\n# Minimizing the loss function \nopt = minimize(timeseriesCVscore, x0=x, \n               args=(data, mean_squared_log_error), \n               method="TNC", bounds = ((0, 1), (0, 1), (0, 1))\n              )\n\n# Take optimal values...\nalpha_final, beta_final, gamma_final = opt.x\nprint("Alpha final: {} Beta Final: {} Gamma Final: {}".format(alpha_final, beta_final, gamma_final))\n\n# ...and train the model with them, forecasting for the next 12 months\nmodel = HoltWinters(data, slen = 12, \n                    alpha = alpha_final, \n                    beta = beta_final, \n                    gamma = gamma_final, \n                    n_preds = 36, scaling_factor = 3)\nmodel.triple_exponential_smoothing()')
 
 
 # ## Define Holt Winters Plotter
-
-# In[9]:
 
 
 def plotHoltWinters(series, plot_intervals=False, plot_anomalies=False):
@@ -254,7 +212,7 @@ def plotHoltWinters(series, plot_intervals=False, plot_anomalies=False):
     plt.axvspan(len(series)-20, len(model.result), alpha=0.3, color='lightgrey')
     plt.grid(True)
     plt.axis('tight')
-    plt.legend(loc="best", fontsize=13);
+    plt.legend(loc="best", fontsize=13)
 
 
 # In[10]:
