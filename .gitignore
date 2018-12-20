@@ -108,4 +108,5 @@ test.py
 
 #data
 *.csv
+*.npy
 .vscode

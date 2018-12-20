@@ -16,7 +16,7 @@ class HoltWinters:
     """
     
     
-    def __init__(self, series, slen, alpha, beta, gamma, n_preds, scaling_factor=1.96):
+    def __init__(self, series, slen, alpha=0, beta=0, gamma=0, n_preds=1, scaling_factor=1.96):
         self.series = series
         self.slen = slen
         self.alpha = alpha
@@ -24,7 +24,6 @@ class HoltWinters:
         self.gamma = gamma
         self.n_preds = n_preds
         self.scaling_factor = scaling_factor
-        
         
     def initial_trend(self):
         sum = 0.0
@@ -35,6 +34,7 @@ class HoltWinters:
     def initial_seasonal_components(self):
         seasonals = {}
         season_averages = []
+        print(len(self.series))
         n_seasons = int(len(self.series)/self.slen)
         # let's calculate season averages
         for j in range(n_seasons):
@@ -140,12 +140,16 @@ class HoltWinters:
             
         return np.mean(np.array(errors))
 
-    def predict(self):
-        opt = minimize(self.timeseriesCVscore, x0=x, args=(self.data, mean_squared_log_error), method="TNC", bounds = ((0, 1), (0, 1), (0, 1)))
-        # Take optimal values...
-        alpha_final, beta_final, gamma_final = opt.x
-        print("Alpha final: {} Beta Final: {} Gamma Final: {}".format(alpha_final, beta_final, gamma_final))
-        # ...and train the model with them, forecasting for the next 12 months
+    def train(self):
+        opt = minimize(self.timeseriesCVscore, x0=[0, 0, 0], args=(self.series, mean_squared_log_error), method='TNC', bounds=((0,1),(0,1),(0,1)))
+        self.alpha, self.beta, self.gamma = opt.x
+        np.save("HWparams", opt.x)
 
-        model = HoltWinters(self.data, slen = 12, alpha = alpha_final, beta = beta_final, gamma = gamma_final, n_preds = 36, scaling_factor = 3)
-        model.triple_exponential_smoothing()
+    def predict(self):
+        # ...and train the model with them, forecasting for the next 12 months
+        self.triple_exponential_smoothing()
+        print(len(self.result), self.series[-1])
+        return self.result[len(self.series):]
+
+        # model = HoltWinters(self.data, slen = 12, alpha = alpha_final, beta = beta_final, gamma = gamma_final, n_preds = 36, scaling_factor = 3)
+        # model.triple_exponential_smoothing()
