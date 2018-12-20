@@ -1,3 +1,8 @@
+import numpy as np
+from sklearn.model_selection import TimeSeriesSplit
+from sklearn.metrics import mean_squared_log_error
+from scipy.optimize import minimize
+
 class HoltWinters:
     """
     Holt-Winters model with the anomalies detection using Brutlag method
@@ -104,4 +109,43 @@ class HoltWinters:
             self.Trend.append(trend)
             self.Season.append(seasonals[i%self.slen])
 
-HoltWinters()
+    def timeseriesCVscore(self, params, series, loss_function=mean_squared_log_error, slen=12):
+        """
+            Returns error on CV  
+            
+            params - vector of parameters for optimization
+            series - dataset with timeseries
+            slen - season length for Holt-Winters model
+        """
+        # errors array
+        errors = []
+        
+        values = series.values
+        alpha, beta, gamma = params
+        
+        # set the number of folds for cross-validation
+        tscv = TimeSeriesSplit(n_splits=3) 
+        
+        # iterating over folds, train model on each, forecast and calculate error
+        for train, test in tscv.split(values):
+
+            model = HoltWinters(series=values[train], slen=slen, 
+                                alpha=alpha, beta=beta, gamma=gamma, n_preds=len(test))
+            model.triple_exponential_smoothing()
+            
+            predictions = model.result[-len(test):]
+            actual = values[test]
+            error = loss_function(predictions, actual)
+            errors.append(error)
+            
+        return np.mean(np.array(errors))
+
+    def predict(self):
+        opt = minimize(self.timeseriesCVscore, x0=x, args=(self.data, mean_squared_log_error), method="TNC", bounds = ((0, 1), (0, 1), (0, 1)))
+        # Take optimal values...
+        alpha_final, beta_final, gamma_final = opt.x
+        print("Alpha final: {} Beta Final: {} Gamma Final: {}".format(alpha_final, beta_final, gamma_final))
+        # ...and train the model with them, forecasting for the next 12 months
+
+        model = HoltWinters(self.data, slen = 12, alpha = alpha_final, beta = beta_final, gamma = gamma_final, n_preds = 36, scaling_factor = 3)
+        model.triple_exponential_smoothing()
