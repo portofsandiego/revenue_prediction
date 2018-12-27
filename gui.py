@@ -1,22 +1,31 @@
-from tkinter import Tk, Label, Button
+from tkinter import Tk, Button, Label, BOTH
+from tkinter.ttk import Frame
 
-class MyFirstGUI:
-    def __init__(self, master):
-        self.master = master
-        master.title("A simple GUI")
+class gui(Frame):
+    def __init__(self):
+        super().__init__()
+        self.initUI()
 
-        self.label = Label(master, text="This is our first GUI!")
-        self.label.pack()
+    def initUI(self):
+        self.master.title("Revenue Predictions")
+        self.pack(fill=BOTH,expand=1)
+        self.centerWindow()
 
-        self.greet_button = Button(master, text="Greet", command=self.greet)
-        self.greet_button.pack()
+    def centerWindow(self):
+        w = 290
+        h = 150
 
-        self.close_button = Button(master, text="Close", command=master.quit)
-        self.close_button.pack()
+        sw = self.master.winfo_screenwidth()
+        sh = self.master.winfo_screenheight()
 
-    def greet(self):
-        print("Greetings!")
+        x = (sw - w)/2
+        y = (sh - h)/2
+        self.master.geometry('%dx%d+%d+%d' % (w,h,x,y))
 
-root = Tk()
-my_gui = MyFirstGUI(root)
-root.mainloop()
+def main():
+    root = Tk()
+    app = gui()
+    root.mainloop()
+
+if __name__ == '__main__':
+    main()
