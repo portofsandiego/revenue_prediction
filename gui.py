@@ -37,15 +37,15 @@ class gui(Frame):
         self.master.geometry('%dx%d+%d+%d' % (w,h,x,y))
 
 def browse_button():
+    global folder_path
     folder_path = StringVar()
     filename = filedialog.askdirectory()
-    folder_path.set(filename)
+    folder_path = filename
     print(filename)
 
 def main():
     root = Tk()
-    folder_path = StringVar()
-    folder_path.set(os.getcwd())
+    folder_path = os.getcwd()
     gui()
     Label(master=root,text=folder_path).pack(side = TOP)
     root.mainloop()
