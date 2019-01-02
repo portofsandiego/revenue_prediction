@@ -85,7 +85,7 @@ class HoltWinters:
                 
                 # when predicting we increase uncertainty on each step
                 self.PredictedDeviation.append(self.PredictedDeviation[-1]*1.01) 
-                
+            
             else:
                 val = self.series[i]
                 last_smooth, smooth = smooth, self.alpha*(val-seasonals[i%self.slen]) + (1-self.alpha)*(smooth+trend)
@@ -151,5 +151,5 @@ class HoltWinters:
         print(len(self.result), self.series[-1])
         return self.result[len(self.series):]
 
-        # model = HoltWinters(self.data, slen = 12, alpha = alpha_final, beta = beta_final, gamma = gamma_final, n_preds = 36, scaling_factor = 3)
-        # model.triple_exponential_smoothing()
+    #model = HoltWinters(self.data, slen = 12, alpha = alpha_final, beta = beta_final, gamma = gamma_final, n_preds = 36, scaling_factor = 3)
+    #model.triple_exponential_smoothing()

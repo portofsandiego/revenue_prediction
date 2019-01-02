@@ -1,12 +1,15 @@
 from tkinter import Tk, Button, Label, filedialog, StringVar, BOTH, BOTTOM, LEFT, RIGHT, TOP
 from tkinter.ttk import Frame
 from data_transformer import reformat
+from forecaster import HoltWinters
 import os
 
 class gui(Frame):
 
     def __init__(self):
         super().__init__()
+        folder_path = os.getcwd()
+        Label(self.master,text=folder_path).pack(side = TOP)
         self.initUI()
 
     def initUI(self):
@@ -27,8 +30,8 @@ class gui(Frame):
         self.closeButton.pack(side=LEFT)
 
     def centerWindow(self):
-        w = 300
-        h = 100
+        w = 600
+        h = 200
 
         sw = self.master.winfo_screenwidth()
         sh = self.master.winfo_screenheight()
@@ -40,7 +43,7 @@ class gui(Frame):
 def browse_button():
     global folder_path
     folder_path = StringVar()
-    filename = filedialog.askdirectory()
+    filename = filedialog.askopenfilename()
     folder_path = filename
     print(filename)
 
@@ -52,9 +55,7 @@ def predict():
 
 def main():
     root = Tk()
-    folder_path = os.getcwd()
     gui()
-    Label(master=root,text=folder_path).pack(side = TOP)
     root.mainloop()
 
 if __name__ == '__main__':

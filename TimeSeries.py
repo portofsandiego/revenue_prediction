@@ -1,6 +1,7 @@
-
+import numpy as np
 import pandas as pd                              # tables and data manipulations
-
+from scipy.optimize import minimize
+import matplotlib.pyplot as plt
 
 # ## Import Data
 
@@ -38,7 +39,6 @@ class HoltWinters:
     # alpha, beta, gamma - Holt-Winters model coefficients
     # n_preds - predictions horizon
     # scaling_factor - sets the width of the confidence interval by Brutlag (usually takes values from 2 to 3)
-    
     """
     
     
@@ -50,7 +50,6 @@ class HoltWinters:
         self.gamma = gamma
         self.n_preds = n_preds
         self.scaling_factor = scaling_factor
-        
         
     def initial_trend(self):
         sum = 0.0
@@ -135,9 +134,6 @@ class HoltWinters:
             self.Trend.append(trend)
             self.Season.append(seasonals[i%self.slen])
 
-
-
-
 from sklearn.model_selection import TimeSeriesSplit # you have everything done for you
 
 def timeseriesCVscore(params, series, loss_function=mean_squared_error, slen=12):
@@ -175,7 +171,17 @@ def timeseriesCVscore(params, series, loss_function=mean_squared_error, slen=12)
 # ## Train Holt Winters Model on Loss Function MSLE
 
 
-get_ipython().run_cell_magic('time', '', 'data = rev.Revenue[:-20] # leave some data for testing\n\n# initializing model parameters alpha, beta and gamma\nx = [0, 0, 0] \n\n# Minimizing the loss function \nopt = minimize(timeseriesCVscore, x0=x, \n               args=(data, mean_squared_log_error), \n               method="TNC", bounds = ((0, 1), (0, 1), (0, 1))\n              )\n\n# Take optimal values...\nalpha_final, beta_final, gamma_final = opt.x\nprint("Alpha final: {} Beta Final: {} Gamma Final: {}".format(alpha_final, beta_final, gamma_final))\n\n# ...and train the model with them, forecasting for the next 12 months\nmodel = HoltWinters(data, slen = 12, \n                    alpha = alpha_final, \n                    beta = beta_final, \n                    gamma = gamma_final, \n                    n_preds = 36, scaling_factor = 3)\nmodel.triple_exponential_smoothing()')
+data = rev.Revenue[:-20] # leave some data for testing
+# initializing model parameters alpha, beta and gamma
+x = [0, 0, 0] 
+# Minimizing the loss functio
+opt = minimize(timeseriesCVscore, x0=x, args=(data, mean_squared_log_error), method="TNC", bounds = ((0, 1), (0, 1), (0, 1))) 
+# Take optimal values...
+alpha_final, beta_final, gamma_final = opt.x
+print("Alpha final: {} Beta Final: {} Gamma Final: {}".format(alpha_final, beta_final, gamma_final))
+# ...and train the model with them, forecasting for the next 12 months
+model = HoltWinters(data, slen = 12, alpha = alpha_final, beta = beta_final, gamma = gamma_final, n_preds = 36, scaling_factor = 3)
+model.triple_exponential_smoothing()
 
 
 # ## Define Holt Winters Plotter
@@ -214,37 +220,21 @@ def plotHoltWinters(series, plot_intervals=False, plot_anomalies=False):
     plt.axis('tight')
     plt.legend(loc="best", fontsize=13)
 
-
-# In[10]:
-
-
 plotHoltWinters(rev.Revenue)
-
-
-# In[11]:
-
-
 plotHoltWinters(rev.Revenue, plot_intervals=True, plot_anomalies=True)
 
 
 # ## Train Holt Winters Model on Loss Function MAPE
-
-# In[12]:
-
-
-get_ipython().run_cell_magic('time', '', 'data = rev.Revenue[:-50]\nslen = 12\n\nx = [0, 0, 0]\n\nopt = minimize(timeseriesCVscore, x0=x,\n              args=(data, mean_absolute_percentage_error, slen),\n              method="TNC", bounds=((0,1), (0,1), (0,1))\n              )\n\nalpha_final, beta_final, gamma_final = opt.x\nprint("Alpha final: {} Beta Final: {} Gamma Final: {}".format(alpha_final, beta_final, gamma_final))\n\nmodel = HoltWinters(data, slen=slen,\n                   alpha=alpha_final,\n                   beta=beta_final,\n                   gamma=gamma_final,\n                   n_preds=100, scaling_factor=3)\nmodel.triple_exponential_smoothing()')
+data = rev.Revenue[:-50]
+slen = 12
+x = [0, 0, 0]
+opt = minimize(timeseriesCVscore, x0=x,args=(data, mean_absolute_percentage_error, slen),method="TNC", bounds=((0,1), (0,1), (0,1)))
+alpha_final, beta_final, gamma_final = opt.x
+print("Alpha final: {} Beta Final: {} Gamma Final: {}".format(alpha_final, beta_final, gamma_final))
+model = HoltWinters(data, slen=slen,alpha=alpha_final,beta=beta_final,gamma=gamma_final,n_preds=100, scaling_factor=3)
+model.triple_exponential_smoothing()
 
 
 # ## Plot Prediction 
-
-# In[13]:
-
-
 plotHoltWinters(rev.Revenue)
-
-
-# In[14]:
-
-
 plotHoltWinters(rev.Revenue, plot_intervals=True, plot_anomalies=True)
-
