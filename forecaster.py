@@ -36,10 +36,10 @@ class HoltWinters:
         season_averages = []
         print(len(self.series))
         n_seasons = int(len(self.series)/self.slen)
-        # let's calculate season averages
+        # Calculate Season Averages
         for j in range(n_seasons):
             season_averages.append(sum(self.series[self.slen*j:self.slen*j+self.slen])/float(self.slen))
-        # let's calculate initial values
+        # Calculate Initial Values
         for i in range(self.slen):
             sum_of_vals_over_avg = 0.0
             for j in range(n_seasons):

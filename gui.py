@@ -1,5 +1,6 @@
 from tkinter import Tk, Button, Label, filedialog, StringVar, BOTH, BOTTOM, LEFT, RIGHT, TOP
 from tkinter.ttk import Frame
+from data_transformer import reformat
 import os
 
 class gui(Frame):
@@ -13,13 +14,13 @@ class gui(Frame):
         self.pack(fill=BOTH,expand=1)
         self.centerWindow()
 
+        #Predict
+        self.predictButton = Button(self.master,text="Predict", command=predict)
+        self.predictButton.pack(side=RIGHT)
+
         #Browse Folder
         self.folderButton = Button(self.master,text="Browse", command=browse_button)
         self.folderButton.pack(side=RIGHT)
-
-        #Predict
-        self.predictButton = Button(self.master,text="Predict")
-        self.predictButton.pack(side=RIGHT)
 
         #Quit Program
         self.closeButton = Button(self.master, text="Quit", command=self.master.quit)
@@ -42,6 +43,12 @@ def browse_button():
     filename = filedialog.askdirectory()
     folder_path = filename
     print(filename)
+
+def predict():
+    #Format the data
+    reformat()
+
+    #Pull data sheet and predict
 
 def main():
     root = Tk()
