@@ -16,9 +16,10 @@ class HoltWinters:
     """
     
     
-    def __init__(self, series, slen, alpha=0, beta=0, gamma=0, n_preds=1, scaling_factor=1.96):
+    def __init__(self, series, slen, name, alpha=0, beta=0, gamma=0, n_preds=1, scaling_factor=1.96):
         self.series = series
         self.slen = slen
+        self.name = name
         self.alpha = alpha
         self.beta = beta
         self.gamma = gamma
@@ -143,7 +144,8 @@ class HoltWinters:
     def train(self):
         opt = minimize(self.timeseriesCVscore, x0=[0, 0, 0], args=(self.series, mean_squared_log_error), method='TNC', bounds=((0,1),(0,1),(0,1)))
         self.alpha, self.beta, self.gamma = opt.x
-        np.save("HWparams", opt.x)
+        np.save(self.name + "_params", opt.x)
+        np.save(self.name + "_data", self.series)
 
     def predict(self):
         # ...and train the model with them, forecasting for the next 12 months
