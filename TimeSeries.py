@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd                              # tables and data manipulations
 from scipy.optimize import minimize
+import seaborn as sns
 import matplotlib.pyplot as plt
 
 # ## Import Data
@@ -103,7 +104,7 @@ class HoltWinters:
                                       self.scaling_factor * 
                                       self.PredictedDeviation[0])
                 continue
-                
+    
             if i >= len(self.series): # predicting
                 m = i - len(self.series) + 1
                 self.result.append((smooth + m*trend) + seasonals[i%self.slen])
@@ -234,7 +235,8 @@ print("Alpha final: {} Beta Final: {} Gamma Final: {}".format(alpha_final, beta_
 model = HoltWinters(data, slen=slen,alpha=alpha_final,beta=beta_final,gamma=gamma_final,n_preds=100, scaling_factor=3)
 model.triple_exponential_smoothing()
 
-
+for x in model.result:
+    print(model.result[x])
 # ## Plot Prediction 
 plotHoltWinters(rev.Revenue)
 plotHoltWinters(rev.Revenue, plot_intervals=True, plot_anomalies=True)
