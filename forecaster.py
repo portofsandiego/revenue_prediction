@@ -1,7 +1,10 @@
 import numpy as np
+import pandas as pd
 from sklearn.model_selection import TimeSeriesSplit
 from sklearn.metrics import mean_squared_log_error
 from scipy.optimize import minimize
+
+rev = pd.read_csv('bwip_reformatted_FY2003-2017.csv', index_col=['Date'],parse_dates=['Date'])
 
 class HoltWinters:
     """
@@ -15,11 +18,9 @@ class HoltWinters:
     
     """
     
-    
-    def __init__(self, series, slen, name, alpha=0, beta=0, gamma=0, n_preds=1, scaling_factor=1.96):
+    def __init__(self, series, slen, alpha=0, beta=0, gamma=0, n_preds=1, scaling_factor=1.96):
         self.series = series
         self.slen = slen
-        self.name = name
         self.alpha = alpha
         self.beta = beta
         self.gamma = gamma
@@ -37,10 +38,10 @@ class HoltWinters:
         season_averages = []
         print(len(self.series))
         n_seasons = int(len(self.series)/self.slen)
-        # let's calculate season averages
+        # Calculate Season Averages
         for j in range(n_seasons):
             season_averages.append(sum(self.series[self.slen*j:self.slen*j+self.slen])/float(self.slen))
-        # let's calculate initial values
+        # Calculate Initial Values
         for i in range(self.slen):
             sum_of_vals_over_avg = 0.0
             for j in range(n_seasons):
@@ -86,7 +87,7 @@ class HoltWinters:
                 
                 # when predicting we increase uncertainty on each step
                 self.PredictedDeviation.append(self.PredictedDeviation[-1]*1.01) 
-                
+            
             else:
                 val = self.series[i]
                 last_smooth, smooth = smooth, self.alpha*(val-seasonals[i%self.slen]) + (1-self.alpha)*(smooth+trend)
@@ -110,48 +111,52 @@ class HoltWinters:
             self.Trend.append(trend)
             self.Season.append(seasonals[i%self.slen])
 
-    def timeseriesCVscore(self, params, series, loss_function=mean_squared_log_error, slen=12):
-        """
-            Returns error on CV  
-            
-            params - vector of parameters for optimization
-            series - dataset with timeseries
-            slen - season length for Holt-Winters model
-        """
-        # errors array
-        errors = []
+def timeseriesCVscore(self, params, series, loss_function=mean_squared_log_error, slen=12):
+    """
+        Returns error on CV  
         
-        values = series.values
-        alpha, beta, gamma = params
+        params - vector of parameters for optimization
+        series - dataset with timeseries
+        slen - season length for Holt-Winters model
+    """
+    # errors array
+    errors = []
+    
+    values = series.values
+    alpha, beta, gamma = params
+    
+    # set the number of folds for cross-validation
+    tscv = TimeSeriesSplit(n_splits=3) 
+    
+    # iterating over folds, train model on each, forecast and calculate error
+    for train, test in tscv.split(values):
+
+        model = HoltWinters(series=values[train], slen=slen, 
+                            alpha=alpha, beta=beta, gamma=gamma, n_preds=len(test))
+        model.triple_exponential_smoothing()
         
-        # set the number of folds for cross-validation
-        tscv = TimeSeriesSplit(n_splits=3) 
+        predictions = model.result[-len(test):]
+        actual = values[test]
+        error = loss_function(predictions, actual)
+        errors.append(error)
         
-        # iterating over folds, train model on each, forecast and calculate error
-        for train, test in tscv.split(values):
+    return np.mean(np.array(errors))
 
-            model = HoltWinters(series=values[train], slen=slen, 
-                                alpha=alpha, beta=beta, gamma=gamma, n_preds=len(test))
-            model.triple_exponential_smoothing()
-            
-            predictions = model.result[-len(test):]
-            actual = values[test]
-            error = loss_function(predictions, actual)
-            errors.append(error)
-            
-        return np.mean(np.array(errors))
+def train(self):
+    opt = minimize(self.timeseriesCVscore, x0=[0, 0, 0], args=(self.series, mean_squared_log_error), method='TNC', bounds=((0,1),(0,1),(0,1)))
+    self.alpha, self.beta, self.gamma = opt.x
+    np.save("HWparams", opt.x)
 
-    def train(self):
-        opt = minimize(self.timeseriesCVscore, x0=[0, 0, 0], args=(self.series, mean_squared_log_error), method='TNC', bounds=((0,1),(0,1),(0,1)))
-        self.alpha, self.beta, self.gamma = opt.x
-        np.save(self.name + "_params", opt.x)
-        np.save(self.name + "_data", self.series)
+def predict(self):
+    # ...and train the model with them, forecasting for the next 12 months
+    self.triple_exponential_smoothing()
+    print(len(self.result), self.series[-1])
+    return self.result[len(self.series):]
 
-    def predict(self):
-        # ...and train the model with them, forecasting for the next 12 months
-        self.triple_exponential_smoothing()
-        print(len(self.result), self.series[-1])
-        return self.result[len(self.series):]
+data = rev.Revenue[:-20]
+x = [0,0,0]
+opt = minimize(timeseriesCVscore,x0=x,args=(data,mean_squared_log_error),method="TNC",bounds=((0,1),(0,1),(0,1)))
+alpha_final,beta_final,gamma_final=opt.x
 
-        # model = HoltWinters(self.data, slen = 12, alpha = alpha_final, beta = beta_final, gamma = gamma_final, n_preds = 36, scaling_factor = 3)
-        # model.triple_exponential_smoothing()
+model = HoltWinters(data, slen = 12, alpha = alpha_final, beta = beta_final, gamma = gamma_final, n_preds = 36, scaling_factor = 3)
+model.triple_exponential_smoothing()
