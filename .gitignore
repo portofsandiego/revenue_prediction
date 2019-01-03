@@ -111,4 +111,6 @@ test.py
 *.xlsx
 *.xls
 *.npy
+*.xls
+*.xlsx
 .vscode
