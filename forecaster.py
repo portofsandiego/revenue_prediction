@@ -4,8 +4,6 @@ from sklearn.model_selection import TimeSeriesSplit
 from sklearn.metrics import mean_squared_log_error
 from scipy.optimize import minimize
 
-rev = pd.read_csv('bwip_reformatted_FY2003-2017.csv', index_col=['Date'],parse_dates=['Date'])
-
 class HoltWinters:
     """
     Holt-Winters model with the anomalies detection using Brutlag method
@@ -36,7 +34,6 @@ class HoltWinters:
     def initial_seasonal_components(self):
         seasonals = {}
         season_averages = []
-        print(len(self.series))
         n_seasons = int(len(self.series)/self.slen)
         # Calculate Season Averages
         for j in range(n_seasons):
@@ -111,7 +108,7 @@ class HoltWinters:
             self.Trend.append(trend)
             self.Season.append(seasonals[i%self.slen])
 
-    def timeseriesCVscore(self, params, series, loss_function=mean_squared_log_error, slen=12):
+    def timeseriesCVscore(self, params, series, loss_function=mean_squared_log_error, slen=1):
         """
             Returns error on CV  
             
@@ -143,7 +140,7 @@ class HoltWinters:
         return np.mean(np.array(errors))
 
     def train(self):
-        opt = minimize(self.timeseriesCVscore, x0=[0, 0, 0], args=(self.series, mean_squared_log_error), method='TNC', bounds=((0,1),(0,1),(0,1)))
+        opt = minimize(self.timeseriesCVscore, x0=[0, 0, 0], args=(self.series, mean_squared_log_error, self.slen), method='TNC', bounds=((0,1),(0,1),(0,1)))
         self.alpha, self.beta, self.gamma = opt.x
         np.save("HWparams", opt.x)
 
@@ -152,11 +149,3 @@ class HoltWinters:
         self.triple_exponential_smoothing()
         print(len(self.result), self.series[-1])
         return self.result[len(self.series):]
-
-data = rev.Revenue[:-20]
-x = [0,0,0]
-opt = minimize(timeseriesCVscore,x0=x,args=(data,mean_squared_log_error),method="TNC",bounds=((0,1),(0,1),(0,1)))
-alpha_final,beta_final,gamma_final=opt.x
-
-# model = HoltWinters(data, slen = 12, alpha = alpha_final, beta = beta_final, gamma = gamma_final, n_preds = 36, scaling_factor = 3)
-# model.triple_exponential_smoothing()

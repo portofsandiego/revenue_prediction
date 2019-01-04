@@ -1,7 +1,13 @@
 from tkinter import Tk, Button, Label, filedialog, Entry, StringVar, BOTH, BOTTOM, LEFT, RIGHT, TOP
 from tkinter.ttk import Frame
 from data_transformer import reformat
+from forecaster import HoltWinters
+from sklearn.metrics import mean_absolute_error
+import numpy as np
 import os
+
+def mean_absolute_scaled_error():
+    pass
 
 class gui(Frame):
 
@@ -27,7 +33,7 @@ class gui(Frame):
         self.t.pack()
 
         # Predict
-        self.predictButton = Button(self.master,text="Predict", command=predict)
+        self.predictButton = Button(self.master,text="Predict", command=self.predict)
         self.predictButton.pack(side=RIGHT)
 
         # Browse Folder
@@ -50,19 +56,21 @@ class gui(Frame):
         self.master.geometry('%dx%d+%d+%d' % (w,h,x,y))
 
     def browse_button(self):
-        filename = filedialog.askopenfilename(initialdir='',title="Select File", filetypes=(("CSV Files","*.csv"),("All Files","*.*")))
-        folder_path = filename
-        self.folder_path.set(filename)
-        print(folder_path)
+        self.folder_path.set(filedialog.askopenfilename(initialdir='',title="Select File", filetypes=(("Data Files","*.csv"),("Hyperparameters","*.npy"),("All Files","*.*"))))
+        print(self.folder_path.get())
 
-def predict():
-    # Format the data
-    reformat()
+    def predict(self):
+        # Format the data
+        data = reformat(self.folder_path.get())
+        data = data.Revenue[:]
+        model = HoltWinters(data, 3, n_preds=12)
+        model.train()
+        predictions = model.predict()
+        print(np.around(predictions, decimals=2))
+        # If file exists, read in data
+        
 
-    # If file exists, read in data
-    
-
-    # Input data sheet and predict
+        # Input data sheet and predict
 
 def main():
     root = Tk()
