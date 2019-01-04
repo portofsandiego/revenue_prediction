@@ -147,5 +147,4 @@ class HoltWinters:
     def predict(self):
         # ...and train the model with them, forecasting for the next 12 months
         self.triple_exponential_smoothing()
-        print(len(self.result), self.series[-1])
         return self.result[len(self.series):]

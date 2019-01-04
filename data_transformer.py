@@ -3,7 +3,7 @@ import numpy as np
 
 def reformat(filename):
     data = pd.read_csv(filename)
-    if data.shape != (36, 2): # (36, 2) is good data 
+    if data.shape != (48, 2): # (48, 2) is good data 
                               # ~(14, 13) need reformatting
         filename = filename[filename.rfind('/')+1:-4]
         data = data.set_index(filename)
@@ -27,3 +27,4 @@ def reformat(filename):
         a.to_csv("reformatted_{filename}_FY{start}-{end}.csv".format(filename=filename, start=year - 4, end=year))
         
         return a
+    return data

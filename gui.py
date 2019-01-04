@@ -1,5 +1,7 @@
-from tkinter import Tk, Button, Label, filedialog, Entry, StringVar, BOTH, BOTTOM, LEFT, RIGHT, TOP
+import tkinter as tk
+from tkinter import Tk, Button, Label, filedialog, Entry, StringVar
 from tkinter.ttk import Frame
+from PIL import Image, ImageTk
 from data_transformer import reformat
 from forecaster import HoltWinters
 from sklearn.metrics import mean_absolute_error
@@ -15,38 +17,54 @@ class gui(Frame):
         super().__init__()
 
         self.master.title("Revenue Predictions")
-        self.pack(fill=BOTH,expand=1)
+        self.pack(fill=tk.BOTH,expand=1)
         self.centerWindow()
 
         self.folder_path = StringVar()
         self.folder_path.set(os.getcwd())
 
-        # Current Folder Label
-        self.m = Label(self.master, text="Directory: ")
-        self.m.pack(side=TOP)
+        # Top Frame 
+        self.tfm = Frame(self.master)
+        # Logo
+        self.img = Image.open("posdlogo.png")
+        self.img = self.img.resize((40,40),Image.ANTIALIAS)
+        self.pic = ImageTk.PhotoImage(self.img)
+        self.label = Label(self.tfm, image = self.pic)
+        self.label.pack(side=tk.LEFT)
+        # Directory Label
+        self.m = Label(self.tfm, text="Select Input Data")
+        self.m.pack(side=tk.BOTTOM)
+        # Pack Top Frame
+        self.tfm.pack(side=tk.TOP, fill=tk.X, padx=5, pady=5)
 
-        self.l = Label(self.master, textvariable = self.folder_path)
-        self.l.pack(side=TOP)
-
+        # Center Frame
+        self.cfm = Frame(self.master)
         # Path Input
-        self.t = Entry(self.master, width=35, textvariable = self.folder_path)
-        self.t.pack()
-
-        # Predict
-        self.predictButton = Button(self.master,text="Predict", command=self.predict)
-        self.predictButton.pack(side=RIGHT)
-
+        self.t = Entry(self.cfm, width=35, textvariable = self.folder_path)
+        self.t.pack(side=tk.LEFT)
         # Browse Folder
-        self.folderButton = Button(self.master,text="Browse", command=self.browse_button)
-        self.folderButton.pack(side=RIGHT)
+        self.cbf = Frame(self.cfm, height=23,width=23)
+        self.cbf.pack_propagate(0)
+        self.cbf.pack()
+        self.folderButton = Button(self.cbf, text="...", command=self.browse_button)
+        self.folderButton.pack(side=tk.RIGHT)
+        # Pack Center Frame
+        self.cfm.pack(anchor=tk.CENTER,padx=5, pady=5)
 
+        # Bottom Frame
+        self.bfm = Frame(self.master)
         # Quit Program
-        self.closeButton = Button(self.master, text="Quit", command=self.master.quit)
-        self.closeButton.pack(side=LEFT)
+        self.closeButton = Button(self.bfm, text="Quit", command=self.master.quit)
+        self.closeButton.pack(side=tk.LEFT)
+        # Predict
+        self.predictButton = Button(self.bfm,text="Predict", command=self.predict)
+        self.predictButton.pack(side=tk.RIGHT)
+        # Pack Bottom Frame
+        self.bfm.pack(side=tk.BOTTOM, fill=tk.X, padx=5, pady=5)
 
     def centerWindow(self):
-        w = 475
-        h = 100
+        w = 425
+        h = 120
 
         sw = self.master.winfo_screenwidth()
         sh = self.master.winfo_screenheight()
