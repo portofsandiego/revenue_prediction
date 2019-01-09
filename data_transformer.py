@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import re
 
 def reformat(filename):
     data = pd.read_csv(filename)
@@ -21,6 +22,7 @@ def reformat(filename):
                     year = i - 1
                 a.loc[len(a)] = [str(year)+'-'+str(k), j]
 
+        # get last four years data
         a = a.iloc[-48:]
 
         a.set_index('Date', inplace=True)
@@ -28,3 +30,26 @@ def reformat(filename):
         
         return a
     return data
+
+def print_forecast(preds, filename, last_date):
+    filename = filename[filename.rfind('/')+1:-4]
+    preds = np.around(preds, decimals=2)
+    date = re.split('-',last_date)
+    year = int(date[0])
+    month = int(date[1])+1
+    if month == 13:
+        year+=1
+        month=1
+    date.clear()
+
+    for i in preds:
+        if month == 12:
+            date.append(str(year)+'-'+str(month))
+            year+=1
+            month=1
+        else:
+            date.append(str(year)+'-'+str(month))
+            month+=1
+    p = pd.DataFrame({'Date':date[:], 'Forecast':preds[:]})
+    p.set_index('Date',inplace=True,drop=True)
+    p.to_csv("forecast-{filename_}.csv".format(filename_=filename))
