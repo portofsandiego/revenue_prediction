@@ -53,3 +53,4 @@ def print_forecast(preds, filename, last_date):
     p = pd.DataFrame({'Date':date[:], 'Forecast':preds[:]})
     p.set_index('Date',inplace=True,drop=True)
     p.to_csv("forecast-{filename_}.csv".format(filename_=filename))
+    print("**FORECASTING COMPLETE**")

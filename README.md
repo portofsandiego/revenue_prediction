@@ -1,21 +1,19 @@
 # Revenue Prediction
 
 ## File Manifest
-- /data
-    - Test case data 
-- /dev
+- **/dev**
     - Python files for program development and tests
-- /resources
+- **/resources**
     - Other files
-- data_transformer.py
+- **data_transformer.py**
     - Reformatter for converting data into correct shape
-- forecaster.py
+- **forecaster.py**
     - Imports reformatted data to run preedictions
-- gui.py
+- **gui.py**
     - Runs user interface
-- HWparams.npy
+- **HWparams.npy**
     - Stores hyperparameters for the Holt Winters dataset
-- README.md
+- **README.md**
 
 ## Innovation Lab
 - Andrew Solomon
